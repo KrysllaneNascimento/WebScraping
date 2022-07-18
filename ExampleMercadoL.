@@ -1,0 +1,20 @@
+import scrapy
+
+
+class MlSpider(scrapy.Spider):
+    name = 'mercado'
+
+    start_urls = ['https://www.mercadolivre.com.br/ofertas']
+
+    def parse(self, response):
+        for i in response.css('.promotion-item__container'):
+            price = i.css('.promotion-item__price ::text').get()
+            title = i.css('.promotion-item__title ::text').get()
+
+            yield {
+                'price': price,
+                'title': title
+            }
+    next_page = response.xpath('//a[contains(@title, "Próxima")]/@href').get()
+    if next_page is not None:
+        yield response.follow(next_page, callback=self.parse)
